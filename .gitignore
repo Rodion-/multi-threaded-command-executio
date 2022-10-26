@@ -1,0 +1,13 @@
+CMakeFiles/*
+.cmake/*
+CMakeCache.txt
+cmake_install.cmake
+CMakeLists.txt.user
+Makefile
+space_battle
+build.ninja
+rules.ninja
+space_battle.cbp
+.ninja_deps
+.ninja_log
+test.h.autosave
