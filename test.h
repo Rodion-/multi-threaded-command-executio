@@ -3,6 +3,8 @@
 #include "UObject.h"
 #include "command.h"
 #include "ioc.h"
+#include "eventloop.h"
+#include "meventloop.h"
 
 TEST( mocktest1 , MoveAdapter )
 {
@@ -249,3 +251,130 @@ TEST( mocktest9 , macroCommandRotate )
 //    EXPECT_EQ( xy.y , 6 );
 //}
 
+class test_cmd1 : public ICommand
+{
+    int i;
+
+    public :
+
+    test_cmd1( int _i ) : i ( _i ){}
+    ~test_cmd1(){}
+
+    void execute() override
+    {
+        std::cout<< i <<std::endl;
+    }
+};
+
+class cmd_stop : public ICommand
+{
+    bool* i;
+
+    public :
+
+    cmd_stop( bool* _i ) : i ( _i ){}
+    ~cmd_stop(){}
+
+    void execute() override
+    {
+        *i = true;
+        std::cout<<"cmd_stop "<<std::endl;
+
+    }
+};
+
+class cmd_exception : public ICommand
+{
+    public :
+
+    cmd_exception(){}
+    ~cmd_exception(){}
+
+    void execute() override
+    {
+        std::cout<<"cmd_exception "<<std::endl;
+        throw 1;
+    }
+};
+
+TEST( mocktest11 , multiThread_eventLoopSoftStop )
+{
+    mEventLoop eloop( std::thread::hardware_concurrency() );
+
+
+    std::thread t1( [&eloop]()
+                     {  int i = 0;
+                        while( i < 20 )
+                        {
+                            eloop.push( new test_cmd1( ++i ) );
+                        }
+//                        eloop.push( new cmd_exception() );
+                        eloop.push( new cmd_stop( eloop.get_softf() ) );
+                     }
+                    );
+
+    std::thread t2( [&eloop]()
+                     {  int i = 20;
+                        while( i < 40 )
+                        {
+                            eloop.push( new test_cmd1( ++i ) );
+                        }
+                        eloop.push( new cmd_exception() );
+                     }
+                    );
+
+    std::thread t3( [&eloop]()
+                     {  int i = 40;
+                        while( i < 60 )
+                        {
+                            eloop.push( new test_cmd1( ++i ) );
+                        }
+//                        eloop.push( new cmd_exception() );
+                     }
+                    );
+
+    t1.join();
+    t2.join();
+    t3.join();
+}
+
+TEST( mocktest12 , multiThread_eventLoopHardStop )
+{
+    mEventLoop eloop( std::thread::hardware_concurrency() );
+
+
+    std::thread t1( [&eloop]()
+                     {  int i = 0;
+                        while( i < 20 )
+                        {
+                            eloop.push( new test_cmd1( ++i ) );
+                        }
+//                        eloop.push( new cmd_exception() );
+                     }
+                    );
+
+    std::thread t2( [&eloop]()
+                     {  int i = 20;
+                        while( i < 40 )
+                        {
+                            eloop.push( new test_cmd1( ++i ) );
+                        }
+                        eloop.push( new cmd_exception() );
+                     }
+                    );
+
+    std::thread t3( [&eloop]()
+                     {  int i = 40;
+                        while( i < 60 )
+                        {
+                            eloop.push( new test_cmd1( ++i ) );
+                            if( i == 50 ) eloop.push( new cmd_stop( eloop.get_hardf() ) );
+                        }
+//                        eloop.push( new cmd_exception() );
+                     }
+                    );
+
+    t1.join();
+    t2.join();
+    t3.join();
+}
