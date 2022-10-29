@@ -6,6 +6,7 @@
 #include "thread"
 #include "queue"
 #include "mutex"
+#include <future>
 
 class mEventLoop
 {
@@ -16,6 +17,8 @@ class mEventLoop
 
     bool soft_stop;
     bool hard_stop;
+
+    std::promise<bool> p;
 
     public:
 
@@ -36,8 +39,7 @@ class mEventLoop
 
     bool is_empty( void )
     {
-        std::cout<<"------------------------->pool.size : " << pool.size() << "++++++++++end size" << std::endl;
-        return pool.empty();// ? false : true;
+       return pool.empty();
     }
 
     bool* get_hardf( void )
