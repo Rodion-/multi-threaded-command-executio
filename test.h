@@ -303,18 +303,19 @@ TEST( mocktest11 , multiThread_eventLoopSoftStop )
 
 
     std::thread t1( [&eloop]()
-                     {  int i = 0;
+                     {
+                        int i = 0;
                         while( i < 20 )
                         {
                             eloop.push( new test_cmd1( ++i ) );
                         }
-//                        eloop.push( new cmd_exception() );
                         eloop.push( new cmd_stop( eloop.get_softf() ) );
                      }
                     );
 
     std::thread t2( [&eloop]()
-                     {  int i = 20;
+                     {
+                        int i = 20;
                         while( i < 40 )
                         {
                             eloop.push( new test_cmd1( ++i ) );
@@ -324,18 +325,21 @@ TEST( mocktest11 , multiThread_eventLoopSoftStop )
                     );
 
     std::thread t3( [&eloop]()
-                     {  int i = 40;
+                     {
+                        int i = 40;
                         while( i < 60 )
                         {
                             eloop.push( new test_cmd1( ++i ) );
                         }
-//                        eloop.push( new cmd_exception() );
                      }
                     );
-
     t1.join();
     t2.join();
     t3.join();
+
+    std::this_thread::sleep_for( std::chrono::milliseconds( 1000 ) );
+
+    EXPECT_EQ( eloop.is_empty() , true );
 }
 
 TEST( mocktest12 , multiThread_eventLoopHardStop )
@@ -344,17 +348,18 @@ TEST( mocktest12 , multiThread_eventLoopHardStop )
 
 
     std::thread t1( [&eloop]()
-                     {  int i = 0;
+                     {
+                        int i = 0;
                         while( i < 20 )
                         {
                             eloop.push( new test_cmd1( ++i ) );
                         }
-//                        eloop.push( new cmd_exception() );
                      }
                     );
 
     std::thread t2( [&eloop]()
-                     {  int i = 20;
+                     {
+                        int i = 20;
                         while( i < 40 )
                         {
                             eloop.push( new test_cmd1( ++i ) );
@@ -364,17 +369,20 @@ TEST( mocktest12 , multiThread_eventLoopHardStop )
                     );
 
     std::thread t3( [&eloop]()
-                     {  int i = 40;
+                     {
+                        int i = 40;
                         while( i < 60 )
                         {
                             eloop.push( new test_cmd1( ++i ) );
                             if( i == 50 ) eloop.push( new cmd_stop( eloop.get_hardf() ) );
                         }
-//                        eloop.push( new cmd_exception() );
                      }
                     );
-
     t1.join();
     t2.join();
     t3.join();
+
+    std::this_thread::sleep_for( std::chrono::milliseconds( 1000 ) );
+
+    EXPECT_EQ( eloop.is_empty() , false );
 }

@@ -34,6 +34,11 @@ class mEventLoop
             t.join();
     }
 
+    bool is_empty( void )
+    {
+        std::cout<<"------------------------->pool.size : " << pool.size() << "++++++++++end size" << std::endl;
+        return pool.empty();// ? false : true;
+    }
 
     bool* get_hardf( void )
     {
@@ -54,6 +59,7 @@ class mEventLoop
             do
             {
                 if( hard_stop == true ) break;
+
                 if( !pool.empty() )
                 {
                     std::unique_lock<std::mutex> guard( mtx );
@@ -67,12 +73,9 @@ class mEventLoop
 
 
                 } else
-                    if( soft_stop == false )
-                    {
-//                        std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
-                    } else
-                        if( soft_stop == true ) break;
-
+                {
+                    if( soft_stop == true ) break;
+                }
             } while( true );
 
         }
