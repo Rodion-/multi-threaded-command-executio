@@ -251,51 +251,7 @@ TEST( mocktest9 , macroCommandRotate )
 //    EXPECT_EQ( xy.y , 6 );
 //}
 
-class test_cmd1 : public ICommand
-{
-    int i;
 
-    public :
-
-    test_cmd1( int _i ) : i ( _i ){}
-    ~test_cmd1(){}
-
-    void execute() override
-    {
-        std::cout<< i <<std::endl;
-    }
-};
-
-class cmd_stop : public ICommand
-{
-    bool* i;
-
-    public :
-
-    cmd_stop( bool* _i ) : i ( _i ){}
-    ~cmd_stop(){}
-
-    void execute() override
-    {
-        *i = true;
-        std::cout<<"cmd_stop "<<std::endl;
-
-    }
-};
-
-class cmd_exception : public ICommand
-{
-    public :
-
-    cmd_exception(){}
-    ~cmd_exception(){}
-
-    void execute() override
-    {
-        std::cout<<"cmd_exception "<<std::endl;
-        throw 1;
-    }
-};
 
 TEST( mocktest11 , multiThread_eventLoopSoftStop )
 {
@@ -307,9 +263,9 @@ TEST( mocktest11 , multiThread_eventLoopSoftStop )
                         int i = 0;
                         while( i < 20 )
                         {
-                            eloop.push( new test_cmd1( ++i ) );
+                            eloop.push( new testCmd( ++i ) );
                         }
-                        eloop.push( new cmd_stop( eloop.get_softf() ) );
+                        eloop.push( new SoftStopCommand( eloop.get_softf() ) );
                      }
                     );
 
@@ -318,9 +274,9 @@ TEST( mocktest11 , multiThread_eventLoopSoftStop )
                         int i = 20;
                         while( i < 40 )
                         {
-                            eloop.push( new test_cmd1( ++i ) );
+                            eloop.push( new testCmd( ++i ) );
                         }
-                        eloop.push( new cmd_exception() );
+                        eloop.push( new exceptionCmd() );
                      }
                     );
 
@@ -329,7 +285,7 @@ TEST( mocktest11 , multiThread_eventLoopSoftStop )
                         int i = 40;
                         while( i < 60 )
                         {
-                            eloop.push( new test_cmd1( ++i ) );
+                            eloop.push( new testCmd( ++i ) );
                         }
                      }
                     );
@@ -352,7 +308,7 @@ TEST( mocktest12 , multiThread_eventLoopHardStop )
                         int i = 0;
                         while( i < 20 )
                         {
-                            eloop.push( new test_cmd1( ++i ) );
+                            eloop.push( new testCmd( ++i ) );
                         }
                      }
                     );
@@ -362,9 +318,9 @@ TEST( mocktest12 , multiThread_eventLoopHardStop )
                         int i = 20;
                         while( i < 40 )
                         {
-                            eloop.push( new test_cmd1( ++i ) );
+                            eloop.push( new testCmd( ++i ) );
                         }
-                        eloop.push( new cmd_exception() );
+                        eloop.push( new exceptionCmd() );
                      }
                     );
 
@@ -373,8 +329,8 @@ TEST( mocktest12 , multiThread_eventLoopHardStop )
                         int i = 40;
                         while( i < 60 )
                         {
-                            eloop.push( new test_cmd1( ++i ) );
-                            if( i == 50 ) eloop.push( new cmd_stop( eloop.get_hardf() ) );
+                            eloop.push( new testCmd( ++i ) );
+                            if( i == 50 ) eloop.push( new HardStopCommand( eloop.get_hardf() ) );
                         }
                      }
                     );
