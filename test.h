@@ -342,3 +342,61 @@ TEST( mocktest12 , multiThread_eventLoopHardStop )
 
     EXPECT_EQ( eloop.is_empty() , false );
 }
+
+#include "eventloop2.h"
+TEST( mocktest13 , multiThread_eventLoop2HardStop )
+{
+//    int thread_counter = std::thread::hardware_concurrency();
+    mEventLoop2 eloop2( 3 );
+
+
+    std::thread t1( [&eloop2]()
+                     {
+                        int i = 0;
+                        while( i < 20 )
+                        {
+                            eloop2.push( new testCmd( ++i ) );
+                        }
+                     }
+                    );
+
+    std::thread t2( [&eloop2]()
+                     {
+                        int i = 20;
+                        while( i < 40 )
+                        {
+                            eloop2.push( new testCmd( ++i ) );
+                        }
+                        eloop2.push( new exceptionCmd() );
+                     }
+                    );
+
+    std::thread t3( [&eloop2]()
+                     {
+                        int i = 40;
+                        while( i < 60 )
+                        {
+                            eloop2.push( new testCmd( ++i ) );
+                            if( i == 50 ) eloop2.push( new HardStopCommand( eloop2.get_hardf() ) );
+                        }
+                     }
+                    );
+    t1.join();
+    t2.join();
+    t3.join();
+
+    std::this_thread::sleep_for( std::chrono::milliseconds( 2000 ) );
+
+    bool res[ 10 ] = { false };
+
+    for( int i = 0; i < 3; i++ )
+    {
+        res[ i ] = eloop2.thread_status( i );
+    }
+
+    EXPECT_EQ( eloop2.is_empty() , false );
+
+    EXPECT_EQ( res[ 0 ] , true );
+    EXPECT_EQ( res[ 1 ] , true );
+    EXPECT_EQ( res[ 2 ] , true );
+}
