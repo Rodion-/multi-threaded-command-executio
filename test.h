@@ -314,6 +314,9 @@ TEST( mocktest13 , multiThread_eventLoop2HardStop )
 {
     mEventLoop2 eloop2( 3 );
 
+    try
+    {
+
 
     std::thread t1( [&eloop2]()
                      {
@@ -324,6 +327,7 @@ TEST( mocktest13 , multiThread_eventLoop2HardStop )
                         }
                      }
                     );
+
 
     std::thread t2( [&eloop2]()
                      {
@@ -365,4 +369,8 @@ TEST( mocktest13 , multiThread_eventLoop2HardStop )
     EXPECT_EQ( res[ 0 ] , true );
     EXPECT_EQ( res[ 1 ] , true );
     EXPECT_EQ( res[ 2 ] , true );
+    }
+    catch (std::exception& e) {
+      std::cout << "[exception caught: " << e.what() << "]\n";
+    }
 }

@@ -8,7 +8,7 @@
 #include "queue"
 #include "mutex"
 #include <future>
-
+#include <exception>
 
 class mEventLoop2
 {
@@ -95,6 +95,12 @@ class mEventLoop2
             p.set_value( true );
 
         }
+        catch (std::exception&)
+        {
+            std::cout<<"exception>>>>>>>>>>>>"<<std::endl;
+            p.set_exception(std::current_exception());
+        }
+
         catch( ... )
         {
             std::cout<<"exception----"<<std::endl;
