@@ -208,5 +208,65 @@ class macroCommandRotate : public ICommand
     }
 };
 
+class testCmd : public ICommand
+{
+    int i;
+
+    public :
+
+    testCmd( int _i ) : i ( _i ){}
+    ~testCmd(){}
+
+    void execute() override
+    {
+        std::cout<< i <<std::endl;
+    }
+};
+
+class exceptionCmd : public ICommand
+{
+    public :
+
+    exceptionCmd(){}
+    ~exceptionCmd(){}
+
+    void execute() override
+    {
+        std::cout<<"exceptionCmd "<<std::endl;
+        throw 1;
+    }
+};
+
+class HardStopCommand : public ICommand
+{
+    bool* i;
+
+    public :
+
+    HardStopCommand( bool* _i ) : i ( _i ){}
+    ~HardStopCommand(){}
+
+    void execute() override
+    {
+        *i = true;
+        std::cout<<"cmd_stop "<<std::endl;
+    }
+};
+
+class SoftStopCommand : public ICommand
+{
+    bool* i;
+
+    public :
+
+    SoftStopCommand( bool* _i ) : i ( _i ){}
+    ~SoftStopCommand(){}
+
+    void execute() override
+    {
+        *i = true;
+        std::cout<<"cmd_stop "<<std::endl;
+    }
+};
 
 #endif // COMMAND_H

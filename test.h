@@ -3,6 +3,8 @@
 #include "UObject.h"
 #include "command.h"
 #include "ioc.h"
+#include "eventloop.h"
+#include "meventloop.h"
 
 TEST( mocktest1 , MoveAdapter )
 {
@@ -216,36 +218,150 @@ TEST( mocktest9 , macroCommandRotate )
     EXPECT_EQ( v.y , 7 + 5 );
 }
 
+TEST( mocktest11 , multiThread_eventLoopSoftStop )
+{
+    mEventLoop eloop( std::thread::hardware_concurrency() );
 
-//std::shared_ptr<UObjectMock> spaceship = std::make_shared<UObjectMock>();
 
-//TEST( mocktest10 , IoC )
-//{
-//    Ioc<ICommand> ioc;
+    std::thread t1( [&eloop]()
+                     {
+                        int i = 0;
+                        while( i < 20 )
+                        {
+                            eloop.push( new testCmd( ++i ) );
+                        }
+                        eloop.push( new SoftStopCommand( eloop.get_softf() ) );
+                     }
+                    );
 
-//    testing::Mock::AllowLeak( &spaceship );
+    std::thread t2( [&eloop]()
+                     {
+                        int i = 20;
+                        while( i < 40 )
+                        {
+                            eloop.push( new testCmd( ++i ) );
+                        }
+                        eloop.push( new exceptionCmd() );
+                     }
+                    );
 
-//    spaceship->DelegateToFake();
+    std::thread t3( [&eloop]()
+                     {
+                        int i = 40;
+                        while( i < 60 )
+                        {
+                            eloop.push( new testCmd( ++i ) );
+                        }
+                     }
+                    );
+    t1.join();
+    t2.join();
+    t3.join();
 
-//    ioc.Register( "move" , []( std::string argv[] )->ICommand*
-//        {
-//            position xy{ std::stoi( argv[ 0 ] ) , std::stoi( argv[ 1 ] ) };
-//            velocity vel{ std::stoi( argv[ 2 ] ) , std::stoi( argv[ 3 ] ) };
-//            return new MoveAdapter( spaceship , xy , vel );
-//        }
-//    );
+    std::this_thread::sleep_for( std::chrono::milliseconds( 1000 ) );
 
-//    std::string argv[ 10 ];
-//    argv[0]="1";
-//    argv[1]="2";
-//    argv[2]="3";
-//    argv[3]="4";
+    EXPECT_EQ( eloop.is_empty() , true );
+}
 
-//    ioc.Resolve( "move" , argv )->execute();
+TEST( mocktest12 , multiThread_eventLoopHardStop )
+{
+    mEventLoop eloop( std::thread::hardware_concurrency() );
 
-//    position xy = *( (position*) spaceship->get_property( "position" ) );
 
-//    EXPECT_EQ( xy.x , 4 );
-//    EXPECT_EQ( xy.y , 6 );
-//}
+    std::thread t1( [&eloop]()
+                     {
+                        int i = 0;
+                        while( i < 20 )
+                        {
+                            eloop.push( new testCmd( ++i ) );
+                        }
+                     }
+                    );
 
+    std::thread t2( [&eloop]()
+                     {
+                        int i = 20;
+                        while( i < 40 )
+                        {
+                            eloop.push( new testCmd( ++i ) );
+                        }
+                        eloop.push( new exceptionCmd() );
+                     }
+                    );
+
+    std::thread t3( [&eloop]()
+                     {
+                        int i = 40;
+                        while( i < 60 )
+                        {
+                            eloop.push( new testCmd( ++i ) );
+                            if( i == 50 ) eloop.push( new HardStopCommand( eloop.get_hardf() ) );
+                        }
+                     }
+                    );
+    t1.join();
+    t2.join();
+    t3.join();
+
+    std::this_thread::sleep_for( std::chrono::milliseconds( 1000 ) );
+
+    EXPECT_EQ( eloop.is_empty() , false );
+}
+
+#include "eventloop2.h"
+
+TEST( mocktest13 , multiThread_eventLoop2HardStop )
+{
+    mEventLoop2 eloop2( 3 );
+
+
+    std::thread t1( [&eloop2]()
+                     {
+                        int i = 0;
+                        while( i < 20 )
+                        {
+                            eloop2.push( new testCmd( ++i ) );
+                        }
+                     }
+                    );
+
+    std::thread t2( [&eloop2]()
+                     {
+                        int i = 20;
+                        while( i < 40 )
+                        {
+                            eloop2.push( new testCmd( ++i ) );
+                        }
+//                        eloop2.push( new exceptionCmd() );
+                     }
+                    );
+
+    std::thread t3( [&eloop2]()
+                     {
+                        int i = 40;
+                        while( i < 60 )
+                        {
+                            eloop2.push( new testCmd( ++i ) );
+                            if( i == 50 ) eloop2.push( new HardStopCommand( eloop2.get_hardf() ) );
+                        }
+                     }
+                    );
+    t1.join();
+    t2.join();
+    t3.join();
+
+//    std::this_thread::sleep_for( std::chrono::milliseconds( 2000 ) );
+
+    bool res[ 10 ] = { false };
+
+    for( int i = 0; i < 3; i++ )
+    {
+        res[ i ] = eloop2.thread_status( i );
+    }
+
+    EXPECT_EQ( eloop2.is_empty() , false );
+
+    EXPECT_EQ( res[ 0 ] , true );
+    EXPECT_EQ( res[ 1 ] , true );
+    EXPECT_EQ( res[ 2 ] , true );
+}

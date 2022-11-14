@@ -1,6 +1,5 @@
 #include "test.h"
 
-
 int main ( int argc , char** argv )
 {
     #if G_TEST_RUN
