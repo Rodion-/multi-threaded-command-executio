@@ -71,11 +71,7 @@ class mEventLoop2
         {
             do
             {
-                if( hard_stop == true )
-                {
-                    p.set_value( true );
-                    break;
-                }
+                if( hard_stop == true ) break;
 
                 if( !pool.empty() )
                 {
@@ -88,13 +84,11 @@ class mEventLoop2
 
                     cmd->execute();
 
+                    delete cmd;
+
                 } else
                 {
-                    if( soft_stop == true )
-                    {
-                        p.set_value( true );
-                        break;
-                    }
+                    if( soft_stop == true ) break;
                 }
             } while( true );
 
@@ -103,7 +97,7 @@ class mEventLoop2
         }
         catch( ... )
         {
-            std::cout<<"exception"<<std::endl;
+            std::cout<<"exception----"<<std::endl;
 //            this->pop();
         }
     }

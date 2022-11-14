@@ -317,8 +317,8 @@ TEST( mocktest13 , multiThread_eventLoop2HardStop )
 
     std::thread t1( [&eloop2]()
                      {
-                        int i = 0;
-                        while( i < 20 )
+                        int i = 100;
+                        while( i < 120 )
                         {
                             eloop2.push( new testCmd( ++i ) );
                         }
@@ -327,7 +327,7 @@ TEST( mocktest13 , multiThread_eventLoop2HardStop )
 
     std::thread t2( [&eloop2]()
                      {
-                        int i = 20;
+                        int i = 120;
                         while( i < 40 )
                         {
                             eloop2.push( new testCmd( ++i ) );
@@ -338,11 +338,12 @@ TEST( mocktest13 , multiThread_eventLoop2HardStop )
 
     std::thread t3( [&eloop2]()
                      {
-                        int i = 40;
-                        while( i < 60 )
+                        int i = 140;
+                        while( i < 160 )
                         {
                             eloop2.push( new testCmd( ++i ) );
-                            if( i == 50 ) eloop2.push( new HardStopCommand( eloop2.get_hardf() ) );
+                            if( i == 150 ) eloop2.push( new HardStopCommand( eloop2.get_hardf() ) );
+//                            if( i == 150 ) eloop2.push( new SoftStopCommand( eloop2.get_softf() ) );
                         }
                      }
                     );

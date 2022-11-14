@@ -215,7 +215,10 @@ class testCmd : public ICommand
     public :
 
     testCmd( int _i ) : i ( _i ){}
-    ~testCmd(){}
+    ~testCmd() override
+    {
+        std::cout<< "testCmd" <<std::endl;
+    }
 
     void execute() override
     {
