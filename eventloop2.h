@@ -34,8 +34,6 @@ class mEventLoop2
             pool_future.push_back( p.get_future() );
 
             threadpool.push_back( std::thread( &mEventLoop2::pop , this , std::move( p ) ) );
-
-//            std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
         }
     }
     ~mEventLoop2()
@@ -64,7 +62,6 @@ class mEventLoop2
 
     bool thread_status( int n )
     {
-//       return pool_future.at( n ).get();
         auto res = pool_future[ n ].get();
         return res;
     }
@@ -74,7 +71,11 @@ class mEventLoop2
         {
             do
             {
-                if( hard_stop == true ) break;
+                if( hard_stop == true )
+                {
+                    p.set_value( true );
+                    break;
+                }
 
                 if( !pool.empty() )
                 {
@@ -89,14 +90,17 @@ class mEventLoop2
 
                 } else
                 {
-                    if( soft_stop == true ) break;
+                    if( soft_stop == true )
+                    {
+                        p.set_value( true );
+                        break;
+                    }
                 }
             } while( true );
 
             p.set_value( true );
 
         }
-//        catch ( int i )
         catch( ... )
         {
             std::cout<<"exception"<<std::endl;
