@@ -371,6 +371,6 @@ TEST( mocktest13 , multiThread_eventLoop2HardStop )
     EXPECT_EQ( res[ 2 ] , true );
     }
     catch (std::exception& e) {
-      std::cout << "[exception caught: " << e.what() << "]\n";
+      std::cout << "[exception caught: ++++++++++++++++" << e.what() << "]\n";
     }
 }

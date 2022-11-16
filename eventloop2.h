@@ -95,13 +95,7 @@ class mEventLoop2
             p.set_value( true );
 
         }
-        catch (std::exception&)
-        {
-            std::cout<<"exception>>>>>>>>>>>>"<<std::endl;
-            p.set_exception(std::current_exception());
-        }
-
-        catch( ... )
+        catch( int )
         {
             std::cout<<"exception----"<<std::endl;
 //            this->pop();
